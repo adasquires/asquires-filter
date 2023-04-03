@@ -13,31 +13,33 @@ import os.path
 import sys
 
 
-def filter(x, y, z, new_x, new_y, new_z, filter_size):
-    #Zip through list of points and add to new filtered list if it isn't
-    #within a distance d of any other points within filtered lists.
+def get_filtered_lists(x, y, z, filter_size):
+    #Zip through list of points and add to new filtered list if it isn't within a distance d of any other points within filtered lists.
     
-    for i, j, k in zip(x, y, z):
-        add = True
-        for l, m, n in zip(new_x, new_y, new_z):
+    filtered_x, filtered_y, filtered_z = get_split_lists(x, y, z)
+
+    for p in range(len(x)):
+        for i, j, k in zip(x[p], y[p], z[p]):
+            add = True
+            for l, m, n in zip(filtered_x[p], filtered_y[p], filtered_z[p]):
             
-            if distance(i, j, k, l, m, n) < filter_size:
-                add = False
+                if distance(i, j, k, l, m, n) < filter_size:
+                    add = False
+                    break
+            
+                else:
+                    continue
                 break
-                
-            else:
-                continue
-            break
             
-        if add:
-            new_x.append(i)
-            new_y.append(j)
-            new_z.append(k)
+            if add:
+                filtered_x[p].append(i)
+                filtered_y[p].append(j)
+                filtered_z[p].append(k)
             
-    return new_x, new_y, new_z
+    return filtered_x, filtered_y, filtered_z
 
 
-def point(x, y, z, filter_size, filename):
+def create_output_file(x, y, z, filter_size, filename):
     #Write new lists from filter function into new file.
     
     output_file_destination, output_filename = get_output_file(filename)
@@ -88,17 +90,14 @@ def get_output_file(filename):
     return output_file_destination, output_filename
 
 
-def new(x, y, z, filter_size):
+def get_split_lists(x, y, z):
     #Iterate through list of empty lists and run filter function.
     
-    new_x = [[] for p in range(len(x))]
-    new_y = [[] for p in range(len(y))]
-    new_z = [[] for p in range(len(z))]
-    
-    for p in range(len(x)):
-        new_x[p], new_y[p], new_z[p] = filter(x[p], y[p], z[p], new_x[p], new_y[p], new_z[p], filter_size)
+    empty_x = [[] for p in range(len(x))]
+    empty_y = [[] for p in range(len(y))]
+    empty_z = [[] for p in range(len(z))]
         
-    return new_x, new_y, new_z
+    return empty_x, empty_y, empty_z
 
 
 def split_list(in_list, n=1000):
@@ -163,13 +162,10 @@ z_points = split_list(z_points, int(split))
 start = time.time()
 
 
-x, y, z = new(x_points, y_points, z_points, int(filter_size))
+filtered_x, filtered_y, filtered_z = get_filtered_lists(x_points, y_points, z_points, int(filter_size))
 
 
-print("Writing new file...")
-
-
-point(x, y, z, filter_size, filename)
+create_output_file(filtered_x, filtered_y, filtered_z, filter_size, filename)
 
 
 count_x_points = 0
@@ -178,7 +174,7 @@ for i in x_points:
         count_x_points += 1
 
 count_x = 0
-for i in x:
+for i in filtered_x:
     for j in i:
         count_x += 1
 
@@ -186,4 +182,3 @@ filtered = count_x_points - count_x
 
 
 print("Complete. {} filtered in {}.".format(filtered, timedelta(seconds=time.time() - start)))
-
