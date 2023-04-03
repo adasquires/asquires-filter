@@ -13,10 +13,10 @@ import os.path
 import sys
 
 
-def get_filtered_lists(x, y, z, filter_size):
+def create_filtered_lists(x, y, z, filter_size):
     #Zip through list of points and add to new filtered list if it isn't within a distance d of any other points within filtered lists.
     
-    filtered_x, filtered_y, filtered_z = get_split_lists(x, y, z)
+    filtered_x, filtered_y, filtered_z = get_empty_lists(x, y, z)
 
     for p in range(len(x)):
         for i, j, k in zip(x[p], y[p], z[p]):
@@ -46,32 +46,32 @@ def create_output_file(x, y, z, filter_size, filename):
     output_filename = os.path.join(output_file_destination, output_filename)
     
     try:
-        xml = open(output_filename, 'w')
+        xml = open(output_filename, "w")
     except:
         print("Error in finding directory.")
         
-    xml = open(output_filename, 'w')
+    xml = open(output_filename, "w")
     xml.write('<?xml version="1.0" encoding="UTF-8"?>' + "\n")
-    xml.write('<CellCounter_Marker_File>' + "\n")
-    xml.write('  <Image_Properties>' + "\n")
-    xml.write('    <Image_Filename>placeholder.tif</Image_Filename>' + "\n")
-    xml.write('  </Image_Properties>' + "\n")
-    xml.write('  <Marker_Data>' + "\n")
-    xml.write('    <Current_Type>1</Current_Type>' + "\n")
-    xml.write('    <Marker_Type>' + "\n")
-    xml.write('      <Type>1</Type>' + "\n")
+    xml.write("<CellCounter_Marker_File>" + "\n")
+    xml.write("  <Image_Properties>" + "\n")
+    xml.write("    <Image_Filename>placeholder.tif</Image_Filename>" + "\n")
+    xml.write("  </Image_Properties>" + "\n")
+    xml.write("  <Marker_Data>" + "\n")
+    xml.write("    <Current_Type>1</Current_Type>" + "\n")
+    xml.write("    <Marker_Type>" + "\n")
+    xml.write("      <Type>1</Type>" + "\n")
     
     for p in range(len(x)):
         for i, j, k in zip(x[p], y[p], z[p]):
-            xml.write('      <Marker>' + "\n")
-            xml.write('        <MarkerX>' + str(i) + '</MarkerX>' + "\n")
-            xml.write('        <MarkerY>' + str(j) + '</MarkerY>' + "\n")
-            xml.write('        <MarkerZ>' + str(k) + '</MarkerZ>' + "\n")
-            xml.write('      </Marker>' + "\n")
+            xml.write("      <Marker>" + "\n")
+            xml.write("        <MarkerX>" + str(i) + "</MarkerX>" + "\n")
+            xml.write("        <MarkerY>" + str(j) + "</MarkerY>" + "\n")
+            xml.write("        <MarkerZ>" + str(k) + "</MarkerZ>" + "\n")
+            xml.write("      </Marker>" + "\n")
             
-    xml.write('    </Marker_Type>' + "\n")
-    xml.write('  </Marker_Data>' + "\n")
-    xml.write('</CellCounter_Marker_File>')
+    xml.write("    </Marker_Type>" + "\n")
+    xml.write("  </Marker_Data>" + "\n")
+    xml.write("</CellCounter_Marker_File>")
     
     return
 
@@ -84,14 +84,13 @@ def distance(x1, y1, z1, x2, y2, z2):
 
 def get_output_file(filename):
     
-    output_file_destination = filename.split('/cells.xml')[0]
-    output_filename = 'asquires-filtered-cells-f' + str(filter_size) + '-s' + str(split) + '.xml'
+    output_file_destination = filename.split("/cells.xml")[0]
+    output_filename = "asquires-filtered-cells-f" + str(filter_size) + "-s" + str(split) + ".xml"
     
     return output_file_destination, output_filename
 
 
-def get_split_lists(x, y, z):
-    #Iterate through list of empty lists and run filter function.
+def get_empty_lists(x, y, z):
     
     empty_x = [[] for p in range(len(x))]
     empty_y = [[] for p in range(len(y))]
@@ -100,15 +99,15 @@ def get_split_lists(x, y, z):
     return empty_x, empty_y, empty_z
 
 
-def split_list(in_list, n=1000):
+def split_list(in_list, n=100):
     #Create a list of lists of length n.
     
-    new_list = []
+    split_list = []
    
     for i in range(0, len(in_list), n):
-        new_list.append(in_list[i:i+n])
+        split_list.append(in_list[i:i+n])
         
-    return new_list
+    return split_list
 
 
 for arg in sys.argv[1:]:
@@ -123,11 +122,11 @@ for arg in sys.argv[1:]:
         filename = value
 
     elif name.lower() == "--filter":
-        # d in distance formula to compare values. higher value, more filtering. 7–10 seems to work okay.
+        # d in distance function to compare values. higher value, more filtering. 7–10 seems to work okay.
         filter_size = value
         
     elif name.lower() == "--split":
-        # length of the lists used in the filter function. higher value, more precise filtering, but the script takes longer.
+        # length of the lists used in split_list function. higher value, more precise filtering, but the script takes longer.
         split = value
         
     elif name.lower() == "--output-destination":
@@ -139,17 +138,17 @@ output_filename = get_output_file(filename)
     
 tree = ET.parse(filename)
 root = tree.getroot()
-a = root.find('Marker_Data')
-b = a.find('Marker_Type')
+a = root.find("Marker_Data")
+b = a.find("Marker_Type")
 
 x_points = []
 y_points = []
 z_points = []
 
-for i in b.findall('Marker'):
-    x = int(i.find('MarkerX').text)
-    y = int(i.find('MarkerY').text)
-    z = int(i.find('MarkerZ').text)
+for i in b.findall("Marker"):
+    x = int(i.find("MarkerX").text)
+    y = int(i.find("MarkerY").text)
+    z = int(i.find("MarkerZ").text)
     x_points.append(x)
     y_points.append(y)
     z_points.append(z)
@@ -162,7 +161,10 @@ z_points = split_list(z_points, int(split))
 start = time.time()
 
 
-filtered_x, filtered_y, filtered_z = get_filtered_lists(x_points, y_points, z_points, int(filter_size))
+filtered_x, filtered_y, filtered_z = create_filtered_lists(x_points, y_points, z_points, int(filter_size))
+
+
+print("Writing new file...")
 
 
 create_output_file(filtered_x, filtered_y, filtered_z, filter_size, filename)
